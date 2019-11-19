@@ -79,17 +79,18 @@ def event(fun):
 
 class task(object):
     @staticmethod
-    def __add_task(fun):
-        client.loop.create_task(fun)
+    def add_task(fun):
+        async def invoke(): await fun()
+        client.loop.create_task(async lambda: awaitfun())
         print(f"Added task {fun.__name__}")
 
     def __init__(self, fun):
-        __add_task(fun)
+        task.add_task(fun)
 
     @staticmethod
     def loop(seconds):
         def decorate_loop(fun):
-            if __check_if_last_arguments(fun, ['state']):
+            if check_if_last_arguments(fun, ['state']):
                 raise SyntaxError("state needs to be the last argument")
 
             inner = fun
@@ -106,7 +107,7 @@ class task(object):
                     inner()
                     await asyncio.sleep(seconds)
             
-            _add_task(loop_task)
+            task.add_task(loop_task)
 
 def run(token = open('bot_token').read().strip(), default_state = type('', (), {})()):
     if not os.path.exists('state.info'): save_state(default_state)
