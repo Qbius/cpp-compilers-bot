@@ -2,7 +2,9 @@ import pickle
 import os
 
 def load_state():
-    return type('', (), pickle.load(open('state.info', 'rb')))
+    obj = type('', (), {})()
+    obj.__dict__ = pickle.load(open('state.info', 'rb'))
+    return obj
 
 def save_state(obj):
     pickle.dump(obj.__dict__, open('state.info', 'wb'))
@@ -28,7 +30,7 @@ class command(object):
     def add_command(prefix, fun):
         not_last_special_args = check_if_last_arguments(fun, ['message, state'])
         if len(not_last_special_args) > 0:
-            raise Error(f"Error while trying to add the {fun.__name__} command: {', '.join(not_last_special_args)} not at the back of the argument list")
+            raise SyntaxError(f"{fun.__name__} command: {', '.join(not_last_special_args)} not at the back of the argument list")
         else:
             command.available_commands[f'{prefix}{fun.__name__}'] = fun
             print(f"Added command {fun.__name__}")
@@ -54,15 +56,18 @@ class command(object):
             args_err_msg += ','.join([f'{arg_name}' + (f' (default: {fun_params.get(arg_name).default})' if fun_params.get(arg_name).default != Parameter.empty else '') for arg_name in normal_args])
             return args_err_msg
         else:
-            return cmd(*args, **kwargs)
+            res = cmd(*args, **kwargs)
+            if 'state' in kwargs: save_state(kwargs['state'])
+            return res
 
 @client.event
 async def on_message(msg):
-    command.call_command(msg)
+    response = command.call_command(msg)
+    if response: await msg.channel.send(response)
 
 def event(fun):
     if check_if_last_arguments(fun, ['state']):
-        raise Error("state needs to be the last argument")
+        raise SyntaxError("state needs to be the last argument")
 
     def inner(*a, **kw):
         kwargs = {k: v for k, v in {'state': load_state()}.items() if k in signature(fun).parameters}
@@ -85,7 +90,7 @@ class task(object):
     def loop(seconds):
         def decorate_loop(fun):
             if __check_if_last_arguments(fun, ['state']):
-                raise Error("state needs to be the last argument")
+                raise SyntaxError("state needs to be the last argument")
 
             inner = fun
             if 'state' in signature(fun).parameters:

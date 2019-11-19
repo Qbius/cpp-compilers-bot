@@ -14,7 +14,11 @@ def get_cpp_features_set(version_label):
 from discord_bot_interface import event, command, task, run
 
 @command
-def subscribe(version_label, compilers):
-    print(f'{version_label} and {compilers}')
+def subscribe(hehe, state):
+    state.hehe = hehe
+
+@command
+def get(state):
+    return state.hehe
 
 run()
