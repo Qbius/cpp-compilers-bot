@@ -1,3 +1,4 @@
 # .gitignore
 bot_token
+state.info
 __pycache__/**/*
