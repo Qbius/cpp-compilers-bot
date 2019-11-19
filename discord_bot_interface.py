@@ -55,7 +55,7 @@ class command(object):
             return cmd(*args, **kwargs)
 
 @client.event
-def on_message(msg):
+async def on_message(msg):
     command.__call_command(msg)
 
 def event(fun):
