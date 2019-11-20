@@ -22,5 +22,5 @@ def find_difference(diff, ffid):
 
 def compare_to_current(old_features):
     new_features = get_cpp_features_map()
-    difference_map = {version: find_difference(diff, ffid) for (version, new_fts), old_fts in zip(new_features.items(), old_features.values()) if (diff := (new_fts - old_fts)) and (ffid := (old_fts - new_fts))}
+    difference_map = {version: find_difference(new_fts - old_fts, old_fts - new_fts) for (version, new_fts), old_fts in zip(new_features.items(), old_features.values()) if new_fts - old_fts}
     return '\n\n'.join(['\n'.join([f'{version}:', *diff_list]) for version, diff_list in difference_map.items()])
