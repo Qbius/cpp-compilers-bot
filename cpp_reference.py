@@ -18,7 +18,7 @@ def find_difference(diff, ffid):
     to_map = lambda dffd: {(name[1], link[1]): {gcc, clang, msvc} for name, link, gcc, clang, msvc in dffd}
     diff_map, ffid_map = to_map(diff), to_map(ffid)
     specific_differences = [(*key, diff_map[key] - ffid_map[key], ffid_map[key] - diff_map[key]) for key in diff_map.keys()]
-    return [f'{name}: now on {", ".join([f"{compiler} {ver}" for compiler, ver in newvers])}, previously: {", ".join([f"{compiler} {ver}" for compiler, ver in oldvers if ver])}' for name, link, newvers, oldvers in specific_differences]
+    return [f'[{name}](https://wg21.link/{link}): now on {", ".join([f"{compiler} {ver}" for compiler, ver in newvers])}, previously: {", ".join([f"{compiler} {ver}" for compiler, ver in oldvers if ver])}' for name, link, newvers, oldvers in specific_differences]
 
 def compare_to_current(old_features):
     new_features = get_cpp_features_map()

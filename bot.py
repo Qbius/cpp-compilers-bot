@@ -1,5 +1,6 @@
-from cpp_reference import get_cpp_features_map
+from cpp_reference import get_cpp_features_map, compare_to_current
 from discord_bot_interface import command, task, run, create_state, client
+from discord import Embed
 
 @command
 def subscribe(message, state):
@@ -11,12 +12,7 @@ def unsubscribe(message, state):
 
 @task.loop(seconds = 60)
 def check_cpp_reference(state):
-    old_features = state.features
-    new_features = get_cpp_features_map()
-    for version, new_features_set in new_features.items():
-        
-
-    {version: diff for version, new_feature_set in new_features.items() if (diff := (new_feature_set - old_features[version]))}
-    return [client.get_user(usr_id).send("hehe") for usr_id in state.subs]
+    new_features = compare_to_current(state.features)
+    return [client.get_user(usr_id).send(embed = Embed(description = new_features)) for usr_id in state.subs]
 
 run(default_state = create_state(subs = set(), features = get_cpp_features_map()))
