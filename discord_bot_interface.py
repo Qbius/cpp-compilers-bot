@@ -1,6 +1,11 @@
 import pickle
 import os
 
+def create_state(**kwargs):
+    obj = type('', (), {})()
+    obj.__dict__ = kwargs
+    return obj
+
 def load_state():
     obj = type('', (), {})()
     obj.__dict__ = pickle.load(open('state.info', 'rb'))
@@ -16,7 +21,7 @@ def check_if_last_arguments(fun, args):
     
 import discord
 import asyncio
-from inspect import signature, Parameter
+from inspect import signature, Parameter, iscoroutine
 
 client = discord.Client()
 print('Initializing...')
@@ -80,8 +85,7 @@ def event(fun):
 class task(object):
     @staticmethod
     def add_task(fun):
-        async def invoke(): await fun()
-        client.loop.create_task(async lambda: awaitfun())
+        client.loop.create_task(fun())
         print(f"Added task {fun.__name__}")
 
     def __init__(self, fun):
@@ -97,17 +101,23 @@ class task(object):
             if 'state' in signature(fun).parameters:
                 def state_inner():
                     state = load_state()
-                    fun(state)
+                    res = fun(state)
                     save_state(state)
+                    return res
                 inner = state_inner
 
             async def loop_task():
                 await client.wait_until_ready()
                 while not client.is_closed():
-                    inner()
+                    res = inner()
+                    if iscoroutine(res): await res
+                    elif isinstance(res, list): [await ele for ele in res]
+                    else: pass
                     await asyncio.sleep(seconds)
             
+            loop_task.__name__ = fun.__name__
             task.add_task(loop_task)
+        return decorate_loop
 
 def run(token = open('bot_token').read().strip(), default_state = type('', (), {})()):
     if not os.path.exists('state.info'): save_state(default_state)
