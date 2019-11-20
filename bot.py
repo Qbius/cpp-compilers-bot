@@ -5,10 +5,12 @@ from discord import Embed
 @command
 def subscribe(message, state):
     state.subs.add(message.author.id)
+    return "Subscribed!"
 
 @command
 def unsubscribe(message, state):
     state.subs.remove(message.author.id)
+    return "Unsubscribed!"
 
 @task.loop(seconds = 60)
 def check_cpp_reference(state):
