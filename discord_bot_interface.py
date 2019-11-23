@@ -1,13 +1,15 @@
 import pickle
 import os
 
+anonymous_object = lambda: type('', (), {})()
+
 def create_state(**kwargs):
-    obj = type('', (), {})()
+    obj = anonymous_object()
     obj.__dict__ = kwargs
     return obj
 
 def load_state():
-    obj = type('', (), {})()
+    obj = anonymous_object()
     obj.__dict__ = pickle.load(open('state.info', 'rb'))
     return obj
 
@@ -119,6 +121,6 @@ class task(object):
             task.add_task(loop_task)
         return decorate_loop
 
-def run(token = open('bot_token').read().strip(), default_state = type('', (), {})()):
+def run(token = open('bot_token').read().strip(), default_state = anonymous_object()):
     if not os.path.exists('state.info'): save_state(default_state)
     client.run(token)
